@@ -1,0 +1,195 @@
+/*
+.badge {
+  padding: 1px 9px 2px;
+  font-size: 12.025px;
+  font-weight: bold;
+  white-space: nowrap;
+  color: #ffffff;
+  background-color: #999999;
+  -webkit-border-radius: 9px;
+  -moz-border-radius: 9px;
+  border-radius: 9px;
+}
+.badge:hover {
+  color: #ffffff;
+  text-decoration: none;
+  cursor: pointer;
+}
+.badge-error {
+  background-color: #b94a48;
+}
+.badge-error:hover {
+  background-color: #953b39;
+}
+.badge-warning {
+  background-color: #f89406;
+}
+.badge-warning:hover {
+  background-color: #c67605;
+}
+.badge-success {
+  background-color: #468847;
+}
+.badge-success:hover {
+  background-color: #356635;
+}
+.badge-info {
+  background-color: #3a87ad;
+}
+.badge-info:hover {
+  background-color: #2d6987;
+}
+.badge-inverse {
+  background-color: #333333;
+}
+.badge-inverse:hover {
+  background-color: #1a1a1a;
+}
+*/
+
+html, body, ul, ol, li, p, h1, h2, h3, h4, h5, h6 {
+margin: 0;
+padding: 0;
+border: 0;
+}
+
+.input-xs {
+    height: 22px;
+    padding: 5px 5px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 3px;
+}	
+
+fieldset {
+	text-align: center;
+	padding: 10;
+	margin: 20;
+}
+image {
+	border: 0;	
+}
+body {
+/*	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 100.01%;
+	color: #000000; */
+}
+
+.alert {
+  padding: 8px 35px 8px 14px;
+  margin-bottom: 18px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  background-color: #fcf8e3;
+  border: 1px solid #fbeed5;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  color: #c09853;
+}
+.alert-heading {
+  color: inherit;
+}
+.alert .close {
+  position: relative;
+  top: -2px;
+  right: -21px;
+  line-height: 18px;
+}
+.alert-success {
+  background-color: #dff0d8;
+  border-color: #d6e9c6;
+  color: #468847;
+}
+.alert-danger,
+.alert-error {
+  background-color: #f2dede;
+  border-color: #eed3d7;
+  color: #b94a48;
+}
+.alert-info {
+  background-color: #d9edf7;
+  border-color: #bce8f1;
+  color: #3a87ad;
+}
+.alert-block {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+.alert-block > p,
+.alert-block > ul {
+  margin-bottom: 0;
+}
+
+div#sections {
+    margin-left:5%;
+}
+
+div.group {
+    clear:both;
+}
+div.section {
+    float:left;
+    width:40%;
+    height:250px;
+    margin-top:20px; 
+    margin-left:40px;
+}
+
+.headerTable {
+	width: 100%;
+	border-collapse: collapse;
+	border-width: 0;
+	padding: 0;
+	border-spacing: 0;
+}
+
+.headerCellLeft{
+	vertical-align: bottom;
+	width: 20%;
+	text-align:left;	
+}
+
+.headerCellRight{
+	vertical-align: bottom;
+	width: 20%;
+	text-align:right;	
+}
+
+.headerCellMiddle{
+	vertical-align: middle;
+	text-align:center;	
+	font-size: 32px;
+	/*color: #23659B;*/
+	color: #176611;
+	font-weight: bold;
+	font-style: italic;
+	
+}
+
+/*
+body .modal-dialog {
+    width: 500px;
+}
+
+*/
+
+/*.navbar-nav > li > a {padding-top:1px !important; padding-bottom:1px !important;}
+.navbar {min-height:24px !important}*/
+
+ navbar 
+.navbar-primary .navbar { background:#000000; border-bottom:none;}
+.navbar-primary .navbar .nav > li > a {color: #ffffff;}
+.navbar-primary .navbar .nav > li > a:hover {color: #fff; background-color: #333333;}
+.navbar-primary .navbar .nav .active > a,.navbar .nav .active > a:hover {color: #fff; background-color: #501762;}
+.navbar-primary .navbar .nav li > a .caret, .tnav .navbar .nav li > a:hover .caret {border-top-color: #fff;border-bottom-color: #fff;}
+.navbar-primary .navbar .nav > li.dropdown.open.active > a:hover {}
+.navbar-primary .navbar .nav > li.dropdown.open > a {color: #fff;background-color: #9f58b5;border-color: #fff;}
+.navbar-primary .navbar .nav > li.dropdown.open.active > a:hover .caret, .tnav .navbar .nav > li.dropdown.open > a .caret {border-top-color: #fff;}
+.navbar-primary .navbar .navbar-brand {color:#fff;}
+.navbar-primary .navbar .nav.pull-right {margin-left: 10px; margin-right: 0;}
+.navbar-xs .navbar-primary .navbar { min-height:30px; height: 30px;   background-image: url(../images/NavGrnd2.gif); background-repeat: repeat-x;}
+.navbar-xs .navbar-primary .navbar .navbar-brand{ padding: 0px 12px;font-size: 16px;line-height: 24px; }
+.navbar-xs .navbar-primary .navbar .navbar-nav > li > a {  padding-top: 0px; padding-bottom: 0px; line-height: 22px; }
+.navbar-sm .navbar-primary .navbar { min-height:40px; height: 40px; }
+.navbar-sm .navbar-primary .navbar .navbar-brand{ padding: 0px 12px;font-size: 16px;line-height: 40px; }
+.navbar-sm .navbar-primary .navbar .navbar-nav > li > a {  padding-top: 0px; padding-bottom: 0px; line-height: 40px; } 

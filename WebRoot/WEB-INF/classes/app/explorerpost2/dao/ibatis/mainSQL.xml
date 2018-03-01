@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mainDao">
+
+<!-- ===========================================================================================
+     This SQL was moved out of NewtonCoreJAR so it could be used in a Spring 3 project.
+     =========================================================================================== -->
+
+<!-- ============================
+	 These are used to create/modify users
+    ============================ -->
+    
+	<!-- These are used when a user is created -->
+	<insert id="insertMemberRec" parameterType="app.explorerpost2.form.MemberFormBean"> 
+		INSERT INTO members(id,user_id,email_tx,pwrd_tx,role_tx,pwrd_exp_dt,audt_upd_user_id,audt_upd_dt_tm)
+		VALUES(0,#{username},#{email},#{passwordEnc},#{appRole},CURDATE(),#{audtUserId},NOW())
+	</insert>
+	
+	<insert id="insertNotifyPref" parameterType="app.explorerpost2.form.MemberFormBean"> 
+		INSERT INTO member_ntfy_pref(user_id,email_tx,phone_tx,meth_cd)
+		VALUES(#{username},#{email},#{phoneNumberFull},#{notifyPref})
+	</insert>
+	
+	<insert id="insertGrpXref" parameterType="app.explorerpost2.form.MemberFormBean"> 
+		INSERT INTO member_grp_xref(user_id,grp_cd)
+		VALUES(#{username},#{memRole})
+	</insert>
+	
+	<!-- This is to create a brand new event only -->
+	<insert id="insertEventRec" parameterType="app.explorerpost2.form.EventFormBean"> 
+		INSERT INTO evnt_trk(evnt_id,strt_dt,strt_tm,end_dt,end_tm,name_tx,loc_tx,
+							grp_cd,rmnd_cd,note_tx,audt_cr_id,audt_cr_dt_tm)
+		VALUES(0,#{startDt},#{startTm},#{endDt},#{endTm},#{nameTx},#{location},
+				#{group},#{reminder},#{notes},#{audtCrId},NOW())
+	</insert>
+	
+	<insert id="insertEmergencyContact" parameterType="app.explorerpost2.form.EventFormBean">
+		INSERT INTO emrg_contact(id)
+		VALUES((SELECT id FROM members WHERE user_id = #{username}))
+	</insert>
+	
+	<!-- This is to create a brand new event only -->
+	<update id="updateEventRec" parameterType="app.explorerpost2.form.EventFormBean"> 
+		UPDATE evnt_trk
+		SET	strt_dt = #{startDt},
+			strt_tm = #{startTm},
+			end_dt = #{endDt},
+			end_tm = #{endTm},
+			name_tx = #{nameTx},
+			loc_tx = #{location},
+			grp_cd = #{group},
+			rmnd_cd = #{reminder},
+			note_tx = #{notes},
+			audt_upd_id = #{audtUpdId},
+			audt_upd_dt_tm = NOW()
+		WHERE evnt_id = #{eventId}
+	</update>
+	
+	<update id="updatePassword" parameterType="app.explorerpost2.bean.PasswordResetBean"> 
+		UPDATE members
+		SET	pwrd_tx = #{hashed},
+			pwrd_exp_dt = DATE_ADD(CURDATE(), INTERVAL #{expiresInDays} DAY),
+			audt_upd_user_id = #{updId},
+			audt_upd_dt_tm = NOW()
+		WHERE user_id = #{username}
+	</update>
+	
+	<select id="selectPassword" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT pwrd_tx
+		FROM members
+		WHERE user_id = #{value}
+	</select>
+	
+	<select id="selectFailedCount" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT COUNT(*)
+		FROM member_lgin_fail_trk
+		WHERE id = (SELECT id FROM members WHERE user_id = #{value})
+	</select>
+	
+	<update id="updateMemberStatus" parameterType="java.util.HashMap">
+		UPDATE members
+		SET stat_cd = #{status}
+		WHERE user_id = #{username}
+	</update>
+	
+	<update id="updateLastLogin" parameterType="java.lang.String">
+		UPDATE members
+		SET last_lgin_dt_tm = NOW()
+		WHERE user_id = #{value}
+	</update>
+	
+	<insert id="logFailedLogin" parameterType="java.lang.String">
+		INSERT INTO member_lgin_fail_trk(
+						id,
+						fail_dt_tm
+					)VALUES(
+						(SELECT id FROM members WHERE user_id = #{value}),
+						NOW()
+					)
+	</insert>
+	
+	<delete id="clearFailedLogin" parameterType="java.lang.String">
+		DELETE FROM member_lgin_fail_trk
+		WHERE id IN (SELECT id FROM members WHERE user_id = #{value})
+	</delete>
+	
+	<!-- get list of member groups (titles) -->
+	<select id="selectUserGrps" resultType="app.explorerpost2.bean.MenuItem">
+		SELECT grp_cd AS 'Key', grp_tx AS 'value'
+		FROM member_grp_cd_look
+	</select>
+	
+	<!-- get the list of users you can edit -->
+	<select id="selectUserList" parameterType="java.lang.String" resultType="app.explorerpost2.bean.MenuItem">
+		SELECT user_id AS 'key', user_id AS 'value'
+		FROM members
+	</select>
+	<!-- get the list of users you can edit -->
+	<select id="selectIdUserList" parameterType="java.lang.String" resultType="app.explorerpost2.bean.MenuItem">
+		SELECT id AS 'key', user_id AS 'value'
+		FROM members
+	</select>
+	
+	<!-- get the list of events you can edit -->
+	<select id="selectEventList" parameterType="java.lang.String" resultType="app.explorerpost2.bean.MenuItem">
+		SELECT evnt_id AS 'key', name_tx AS 'value'
+		FROM evnt_trk
+		WHERE end_dt >= DATE_ADD(CURDATE(), INTERVAL -2 DAY)
+	</select>
+
+	<!-- for updating users -->	
+	<select id="selectUserPref" parameterType="java.lang.String" resultType="app.explorerpost2.form.MemberFormBean">
+		SELECT a.email_tx AS email,
+			LEFT(b.phone_tx,LOCATE('@',b.phone_tx) - 1) AS phoneNumber,
+			SUBSTRING(b.phone_tx,LOCATE('@',b.phone_tx)) AS carrier,
+			b.meth_cd AS notifyPref
+		FROM login.members a JOIN login.member_ntfy_pref b 
+			ON a.user_id = b.user_id
+		WHERE a.user_id = #{value}
+	</select>
+	
+	<select id="selectUserRole" parameterType="java.lang.String" resultType="app.explorerpost2.form.MemberFormBean">
+		SELECT a.role_tx AS appRole, b.grp_cd AS memRole
+		FROM members a JOIN member_grp_xref b
+			ON a.user_id = b.user_id
+		WHERE a.user_id = #{value}
+	</select>
+	
+	<select id="selectUserStatus" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT stat_cd
+		FROM members
+		WHERE user_id = #{value}
+	</select>
+	
+	<select id="selectCalendarDaysByUser" parameterType="java.util.HashMap" resultType="app.explorerpost2.bean.CalendarDayBean">
+		SELECT strt_dt AS eventDate, COUNT(*) AS eventCount
+      	FROM evnt_trk
+        JOIN member_grp_xref 
+             ON evnt_trk.grp_cd &lt;= member_grp_xref.grp_cd
+        WHERE YEAR(strt_dt) &lt;= #{year}
+       	AND YEAR(end_dt) >= #{year}
+       	AND MONTH(strt_dt) &lt;= #{month}
+       	AND MONTH(end_dt) >= #{month}
+       	AND member_grp_xref.user_id = #{userId}
+        AND stat_cd = '0' 
+        AND member_grp_xref.grp_cd != 4 
+        GROUP BY 1
+       	LIMIT 100 
+	</select> 
+	<select id="selectEventsByUser" parameterType="java.util.HashMap" resultType="app.explorerpost2.bean.EventBean">
+		SELECT evnt_trk.evnt_id AS eventId,
+			DATE_FORMAT(evnt_trk.strt_dt,'%Y-%m-%d') AS startDate, 
+			TIME_FORMAT(evnt_trk.strt_tm, '%H:%i') AS startTime,
+			DATE_FORMAT(evnt_trk.end_dt,'%Y-%m-%d') AS endDate, 
+			TIME_FORMAT(evnt_trk.end_tm, '%H:%i') AS endTime,
+			evnt_trk.name_tx AS eventName,
+            evnt_trk.loc_tx AS eventLocation,evnt_trk.note_tx AS eventNote,
+            member_grp_xref.user_id AS userId, IFNULL(evnt_att_trk.resp_cd,"") AS responseCd,
+            IFNULL(evnt_att_trk.type_cd,"U") AS attendanceTypeCd
+        FROM login.evnt_trk
+        JOIN login.member_grp_xref 
+        	ON evnt_trk.grp_cd &lt;= member_grp_xref.grp_cd
+		JOIN login.members
+			ON members.user_id = member_grp_xref.user_id
+        LEFT JOIN login.evnt_att_trk
+            ON evnt_trk.evnt_id = evnt_att_trk.evnt_id
+            AND members.id = evnt_att_trk.user_id
+        WHERE evnt_trk.stat_cd = '0'
+       	AND member_grp_xref.user_id = #{userId}
+        AND evnt_trk.strt_dt = #{startDate}
+        AND member_grp_xref.grp_cd != -10 
+        LIMIT 100 
+	</select>
+	<select id="selectEventByKey" parameterType="java.util.HashMap" resultType="app.explorerpost2.bean.EventBean">
+		SELECT evnt_trk.evnt_id AS eventId,
+			DATE_FORMAT(evnt_trk.strt_dt,'%Y-%m-%d') AS startDate, 
+			TIME_FORMAT(evnt_trk.strt_tm, '%H:%i') AS startTime,
+			DATE_FORMAT(evnt_trk.end_dt,'%Y-%m-%d') AS endDate, 
+			TIME_FORMAT(evnt_trk.end_tm, '%H:%i') AS endTime,
+			evnt_trk.name_tx AS eventName,
+            evnt_trk.loc_tx AS eventLocation,evnt_trk.note_tx AS eventNote,
+            evnt_trk.grp_cd AS eventGroup,
+            evnt_trk.rmnd_cd AS eventReminder
+        FROM evnt_trk
+        WHERE evnt_trk.stat_cd = '0'
+       	AND evnt_trk.evnt_id = #{eventKey}
+        LIMIT 100 
+	</select>
+	
+	<select id="selectAttendanceByKey" parameterType="java.lang.String" resultType="app.explorerpost2.bean.AttendanceBean">
+		SELECT evnt_trk.evnt_id AS eventId, 
+			member_grp_xref.user_id AS userId, 
+            IFNULL(evnt_att_trk.resp_cd,"A") AS responseCd,
+            (CASE
+            	WHEN evnt_att_trk.type_cd = "U" THEN "No"
+            	WHEN evnt_att_trk.type_cd = "X" THEN "Yes"
+            	ELSE "No"
+            END) AS attendanceTypeCd,
+            IFNULL(evnt_att_trk.note_tx,"") as notes
+        FROM login.evnt_trk
+        JOIN login.member_grp_xref 
+        	ON evnt_trk.grp_cd &lt;= member_grp_xref.grp_cd
+        JOIN login.members
+			ON members.user_id = member_grp_xref.user_id
+        LEFT JOIN login.evnt_att_trk
+            ON evnt_trk.evnt_id = evnt_att_trk.evnt_id
+            AND members.id = evnt_att_trk.user_id
+        WHERE evnt_trk.stat_cd = '0'
+        AND evnt_trk.evnt_id = #{value}
+        AND member_grp_xref.grp_cd != -10 
+	</select>
+	
+	<select id="isContactOutdated" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT count(*) 
+		FROM login.emrg_contact c
+			JOIN login.members m ON c.id = m.id
+		WHERE user_id = #{value}
+		AND (last_upd_dt_tm &lt;= CURRENT_DATE() - INTERVAL 1 YEAR
+			OR upd_reqd = "Y")
+	</select>
+	
+	<select id="selectEmergencyContact" parameterType="java.lang.String" resultType="app.explorerpost2.bean.EmergencyContactBean">
+		SELECT IFNULL(c.frst_name_tx,'') AS firstName, IFNULL(c.last_name_tx,'') AS lastName,
+			IFNULL(c.rel_type_tx,'') AS relationship, IFNULL(c.phone_tx,'') AS phone,
+    		IFNULL(c.email_tx,'') AS email
+		FROM login.emrg_contact c
+			JOIN login.members m ON c.id = m.id
+		WHERE user_id = #{value};  
+	</select>
+	
+	<select id="selectEmergencyContacts" parameterType="java.lang.String" resultType="app.explorerpost2.bean.EmergencyContactBean">
+		SELECT m.user_id AS userId,c.frst_name_tx AS firstName,
+			c.last_name_tx AS lastName,c.rel_type_tx AS relationship,
+			c.phone_tx AS phone,c.email_tx AS email,
+    		DATE_FORMAT(c.last_upd_dt_tm,'%m/%d/%Y') AS lastUpdate
+		FROM login.emrg_contact c
+			RIGHT JOIN login.members m ON c.id = m.id
+		WHERE m.stat_cd = "Y"  
+	</select>
+	
+	<select id="selectEquipmentStatuses" resultType="app.explorerpost2.bean.MenuItem">
+		SELECT stat_cd AS 'key', stat_tx AS 'value'
+		FROM equip_stat_look
+	</select>
+	
+	<select id="selectEquipmentList" resultType="app.explorerpost2.bean.MenuItem">
+		SELECT id AS 'key', equip_id AS 'value'
+		FROM equip_inv_trk
+	</select>
+	
+	<select id="selectEquipmentAssignedUser" parameterType="java.lang.Integer" resultType="app.explorerpost2.bean.EquipmentBean">
+		SELECT IFNULL(curr_user_id,-1) AS userId
+		FROM equip_inv_trk
+		WHERE id = #{value}
+	</select>
+	
+	<select id="selectEquipmentInformation" parameterType="java.lang.Integer" resultType="app.explorerpost2.bean.EquipmentBean">
+		SELECT id AS serial, equip_id AS equipId,
+			brnd_tx AS brand, modl_tx AS model,
+			equip_type_tx AS equipType,
+			stat_cd AS status, curr_user_id AS userId
+		FROM equip_inv_trk
+		WHERE id = #{value}
+	</select>
+	
+	<update id="updEmergenctContact" parameterType="app.explorerpost2.form.EmergencyContactFormBean">
+		UPDATE login.emrg_contact
+		SET frst_name_tx = #{firstName},
+			last_name_tx = #{lastName},
+			rel_type_tx = #{relationship},
+        	phone_tx = #{phone},
+        	email_tx = #{email},
+        	last_upd_dt_tm = NOW(),
+        	upd_reqd = "N"
+		WHERE id = (SELECT id FROM login.members WHERE user_id = #{userId});
+	</update>
+	
+	<update id="requestContactUpdate" parameterType="java.lang.String">
+		UPDATE login.emrg_contact
+		SET upd_reqd = "Y"
+		WHERE id = (SELECT id FROM login.members WHERE user_id = #{userId});
+	</update>
+	
+	<!-- Used to update user notification preferences -->
+	<update id="updateUserEmail" parameterType="app.explorerpost2.form.MemberFormBean">
+		UPDATE members
+		SET email_tx = #{email}
+		WHERE user_id = #{username}
+	</update>
+	
+	<update id="updateUserNotifyPref" parameterType="app.explorerpost2.form.MemberFormBean">
+		UPDATE member_ntfy_pref
+		SET email_tx = #{email},
+			phone_tx = #{phoneNumberFull},
+			meth_cd = #{notifyPref}
+		WHERE user_id = #{username}
+	</update>
+	
+	<!--  Used to update member roles for both apps and rank -->
+	<update id="updateAppRole" parameterType="app.explorerpost2.form.MemberFormBean">
+		UPDATE member_grp_xref
+		SET grp_cd = #{memRole}
+		WHERE user_id = #{username}
+	</update>
+	
+	<update id="updateUserRole" parameterType="app.explorerpost2.form.MemberFormBean">
+		UPDATE members
+		SET role_tx = #{appRole}
+		WHERE user_id = #{username}
+	</update>
+	
+	<!-- Used to update the members active status -->
+	<update id="updateUserStatus" parameterType="java.util.HashMap">
+		UPDATE members
+		SET stat_cd = #{status},
+		audt_upd_user_id = #{audtUserId},
+		audt_upd_dt_tm = NOW()
+		WHERE user_id = #{username}
+	</update>
+	
+	<update id="updAttendanceRecord" parameterType="app.explorerpost2.bean.AttendanceBean">
+		UPDATE evnt_att_trk
+			SET resp_cd = #{responseCd},
+			type_cd = #{attendanceTypeCd},
+			note_tx = #{notes},
+			audt_upd_id = #{audtUserId},
+			audt_upd_Dt_tm = NOW()
+		WHERE user_id = (select id from login.members where user_id = trim(#{userId}))
+		AND evnt_id = #{eventId}
+		AND ( resp_cd != #{responseCd} OR
+				note_tx != #{notes}
+			)
+	</update>
+	
+	<insert id="insertAttendanceRecord" parameterType="app.explorerpost2.bean.AttendanceBean">
+		INSERT INTO evnt_att_trk(evnt_id,
+						user_id,
+						resp_cd,
+						type_cd,
+						note_tx,
+						audt_upd_id,
+						audt_upd_dt_tm)
+				VALUES(#{eventId},
+						(select id from login.members where user_id = trim(#{userId})),
+						#{responseCd},
+						#{attendanceTypeCd},
+						#{notes},
+						#{audtUserId},
+						NOW())
+	</insert>
+	
+	<insert id="insertEquipment" parameterType="app.explorerpost2.form.EquipmentFormBean">
+		INSERT INTO equip_inv_trk(id,
+						equip_id,
+						brnd_tx,
+						modl_tx,
+						equip_type_tx,
+						stat_cd,
+						last_upd_dt_tm,
+						last_upd_user_id)
+					VALUES(0,
+						#{equipId},
+						#{brand},
+						#{model},
+						#{equipType},
+						#{status},
+						NOW(),
+						#{audtUserId})
+	</insert>
+	
+	<update id="assignOrUnassign" parameterType="app.explorerpost2.form.EquipmentFormBean">
+		UPDATE equip_inv_trk
+			SET curr_user_id = #{userId},
+			last_upd_user_id = #{audtUserId},
+			last_upd_dt_tm = NOW()
+		WHERE id = #{serial}
+	</update>
+	
+	<update id="updateEquipment" parameterType="app.explorerpost2.form.EquipmentFormBean">
+		UPDATE equip_inv_trk
+			SET brnd_tx = #{brand},
+			modl_tx = #{model},
+			equip_type_tx = #{equipType},
+			stat_cd = #{status},
+			curr_user_id = #{userId},
+			last_upd_user_id = #{audtUserId},
+			last_upd_dt_tm = NOW()
+		WHERE id = #{serial}
+	</update>
+	
+</mapper>
+

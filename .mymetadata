@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-module
+  type="WEB"
+  name="PeaMailAuditor"
+  id="myeclipse.1383842506568"
+  context-root="/PeaMailAuditor"
+  j2ee-spec="5.0"
+  archive="PeaMailAuditor.war">
+  <attributes>
+    <attribute name="webrootdir" value="WebRoot" />
+  </attributes>
+</project-module>
+
